@@ -2,118 +2,105 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>推薦人訂單查詢</title>
+  <title>📋 推薦人訂單查詢</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+    }
+    label {
+      display: block;
+      margin-top: 1em;
+    }
+    input, select {
+      padding: 5px;
+      width: 250px;
+    }
+    button {
+      margin-top: 1em;
+      padding: 8px 20px;
+      font-size: 16px;
+    }
+    #token_section {
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <h2>📋 推薦人訂單查詢</h2>
-  <form id="orderForm">
-    <label>推薦碼：<input type="text" id="referral_code" required></label><br/>
-    <label>Access Token：<input type="text" id="access_token" required></label><br/>
-    <label>起始時間：<input type="date" id="start_date"></label>
-    <label>結束時間：<input type="date" id="end_date"></label><br/><br/>
-    <button type="submit">查詢訂單</button>
-  </form>
 
-  <p id="loading" style="display:none;">📡 查詢中，請稍候...</p>
-  <p id="summary"></p>
-  <button id="exportBtn" style="display:none;">📤 匯出報表 (CSV)</button>
+  <label for="referral_code">推薦碼：</label>
+  <select id="referral_code" onchange="onReferralChange()">
+    <option value="">請選擇推薦碼</option>
+    <option value="LAVONS88">LAVONS88</option>
+    <option value="LAVONS_WINNIE">LAVONS_WINNIE</option>
+    <option value="LAVONS_XIAOSHAN">LAVONS_XIAOSHAN</option>
+  </select>
 
-  <table id="resultTable" border="1">
-    <thead>
-      <tr>
-        <th>訂單編號</th>
-        <th>成立時間</th>
-        <th>金額</th>
-        <th>付款狀態</th>
-        <th>出貨狀態</th>
-        <th>狀態</th>
-        <th>備註</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="token_section">
+    <label for="access_token">Access Token：</label>
+    <input type="password" id="access_token" />
+  </div>
+
+  <label for="start_time">起始時間：</label>
+  <input type="datetime-local" id="start_time" />
+
+  <label for="end_time">結束時間：</label>
+  <input type="datetime-local" id="end_time" />
+
+  <button id="query_btn" onclick="fetchOrders()" disabled>查詢訂單</button>
+
+  <pre id="result"></pre>
 
   <script>
-    const apiURL = "https://referral-report-api.onrender.com/orders";
+    function onReferralChange() {
+      const code = document.getElementById("referral_code").value;
+      const tokenSection = document.getElementById("token_section");
+      const tokenInput = document.getElementById("access_token");
+      tokenSection.style.display = code ? "block" : "none";
+      tokenInput.value = "";
+      updateButtonState();
+    }
 
-    // 如果網址有帶參數，自動填入表單
-    window.addEventListener("load", () => {
-      const params = new URLSearchParams(window.location.search);
-      document.getElementById("referral_code").value = params.get("referral_code") || "";
-      document.getElementById("access_token").value = params.get("access_token") || "";
-    });
+    function updateButtonState() {
+      const code = document.getElementById("referral_code").value;
+      const token = document.getElementById("access_token").value;
+      const btn = document.getElementById("query_btn");
+      btn.disabled = !(code && token);
+    }
 
-    document.getElementById("orderForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const code = document.getElementById("referral_code").value.trim();
-      const token = document.getElementById("access_token").value.trim();
-      const start = document.getElementById("start_date").value;
-      const end = document.getElementById("end_date").value;
+    document.getElementById("access_token").addEventListener("input", updateButtonState);
 
-      const loading = document.getElementById("loading");
-      const summary = document.getElementById("summary");
-      const tbody = document.querySelector("#resultTable tbody");
-      const exportBtn = document.getElementById("exportBtn");
-      loading.style.display = "block";
-      summary.textContent = "";
-      tbody.innerHTML = "";
-      exportBtn.style.display = "none";
+    function fetchOrders() {
+      const referral = document.getElementById("referral_code").value;
+      const token = document.getElementById("access_token").value;
+      const start = document.getElementById("start_time").value.replace("T", " ");
+      const end = document.getElementById("end_time").value.replace("T", " ");
 
-      try {
-        const url = new URL(apiURL);
-        url.searchParams.set("referral_code", code);
-        url.searchParams.set("access_token", token);
-        if (start) url.searchParams.set("created_at_min", start + " 00:00:00");
-        if (end) url.searchParams.set("created_at_max", end + " 23:59:59");
+      const url = `https://referral-report-api.onrender.com/orders?referral_code=${referral}&access_token=${token}&created_at_min=${start}&created_at_max=${end}`;
+      const resultBox = document.getElementById("result");
+      resultBox.textContent = "⏳ 查詢中...";
 
-        const res = await fetch(url);
-        const data = await res.json();
-
-        loading.style.display = "none";
-
-        if (!res.ok || data.error) {
-          summary.textContent = `❌ 查詢失敗：${data.error || "未知錯誤"}`;
-          return;
-        }
-
-        if (data.message) {
-          summary.textContent = "查無訂單";
-          return;
-        }
-
-        let total = 0;
-        data.forEach(order => {
-          const row = tbody.insertRow();
-          row.insertCell().innerText = order.order_number;
-          row.insertCell().innerText = order.created_at;
-          row.insertCell().innerText = order.total_price;
-          row.insertCell().innerText = order.financial_status;
-          row.insertCell().innerText = order.fulfillment_status;
-          row.insertCell().innerText = order.is_cancelled ? "❌ 已取消" : "✅ 有效";
-          row.insertCell().innerText = order.remark || "";
-          total += parseFloat(order.total_price);
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          resultBox.textContent = JSON.stringify(data, null, 2);
+        })
+        .catch((err) => {
+          resultBox.textContent = "❌ 發生錯誤：" + err.message;
         });
+    }
 
-        summary.textContent = `✅ 共 ${data.length} 筆訂單，總金額：NT$ ${total.toFixed(0)} 元`;
-        exportBtn.style.display = "inline-block";
+    // 預設填入今天 00:00 ~ 現在時間（整點/半點）
+    window.onload = () => {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() < 30 ? 0 : 30, 0, 0);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        exportBtn.onclick = () => {
-          const csv = "訂單編號,成立時間,金額,付款狀態,出貨狀態,狀態,備註\n" + data.map(o =>
-            [o.order_number, o.created_at, o.total_price, o.financial_status, o.fulfillment_status, o.is_cancelled ? "已取消" : "有效", o.remark || ""].join(",")
-          ).join("\n");
-          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = `orders_${code}.csv`;
-          link.click();
-        };
-      } catch (err) {
-        loading.style.display = "none";
-        summary.textContent = `❌ 查詢失敗，請確認後端是否啟動或網路是否通順`;
-        console.error(err);
-      }
-    });
+      const fmt = (d) => d.toISOString().slice(0, 16);
+      document.getElementById("start_time").value = fmt(today);
+      document.getElementById("end_time").value = fmt(now);
+    };
   </script>
 </body>
 </html>
