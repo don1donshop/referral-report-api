@@ -19,7 +19,6 @@ EASYSTORE_API_URL = "https://www.don1donshop.com/api/3.0/orders.json"
 EASYSTORE_API_TOKEN = os.environ.get("EASYSTORE_API_KEY") or "bf227aac7aec54ea6abd5a78dd82a44a"
 
 @app.route("/orders", methods=["GET"])
-
 def get_orders():
     referral_code = request.args.get("referral_code")
     access_token = request.args.get("access_token")
@@ -34,14 +33,9 @@ def get_orders():
     created_at_min = request.args.get("created_at_min") or (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d 00:00:00")
     created_at_max = request.args.get("created_at_max") or datetime.now().strftime("%Y-%m-%d 23:59:59")
 
-    headers = {
-        "EasyStore-Access-Token": EASYSTORE_API_TOKEN,
-        "Accept": "application/json"
-    }
-
-    # 🌀 自動翻頁抓所有訂單
-    page = 1
     all_orders = []
+    page = 1
+    max_records = 1000  # ❗ 最多只撈 1000 筆
 
     while True:
         params = {
@@ -51,22 +45,31 @@ def get_orders():
             "created_at_min": created_at_min,
             "created_at_max": created_at_max
         }
+        headers = {
+            "EasyStore-Access-Token": EASYSTORE_API_TOKEN,
+            "Accept": "application/json"
+        }
 
         response = requests.get(EASYSTORE_API_URL, params=params, headers=headers)
+        print(f"🔎 Page {page} - 狀態碼:", response.status_code)
 
-        print(f"🔎 Page {page} - 狀態碼: {response.status_code}")
         if response.status_code != 200:
             print("❌ 回應錯誤：", response.text)
+            return jsonify({"error": "無法取得訂單資料"}), 500
+
+        page_orders = response.json().get("orders", [])
+        if not page_orders:
             break
 
-        orders = response.json().get("orders", [])
-        if not orders:
+        all_orders.extend(page_orders)
+
+        # 🛑 若已超過最多上限，停止撈取
+        if len(all_orders) >= max_records:
+            print(f"🚫 達到上限 {max_records} 筆，停止撈取")
             break
 
-        all_orders.extend(orders)
         page += 1
 
-    # 🎯 篩選指定推薦碼
     filtered = []
     print("🧾 開始列出每筆訂單的 Referral Code：")
     for order in all_orders:
@@ -91,6 +94,7 @@ def get_orders():
         return jsonify({"message": "查無符合的訂單"}), 200
 
     return jsonify(filtered)
+
 
 @app.route("/orders/debug", methods=["GET"])
 def debug_referrals():
