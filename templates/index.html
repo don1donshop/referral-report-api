@@ -29,7 +29,7 @@
 
   <div id="tokenBlock" class="hidden">
     <label>Access Token：</label>
-    <input type="text" id="accessToken" placeholder="請輸入 token" />
+    <input type="password" id="accessToken" placeholder="請輸入 token" />
   </div>
 
   <label>起始時間：</label>
@@ -60,24 +60,6 @@
   </table>
 
   <script>
-function renderTable(data) {
-  const tbody = document.querySelector("#results tbody");
-  tbody.innerHTML = "";
-  data.forEach(order => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${order.order_number}</td>
-      <td>${order.created_at}</td>
-      <td>${order.total_price}</td>
-      <td>${order.financial_status}</td>
-      <td>${order.fulfillment_status}</td>
-      <td>${order.is_cancelled ? "❌ 已取消" : "✅ 有效"}</td>
-      <td>${order.remark || ""}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
     function onCodeChange() {
       const code = document.getElementById('referralCode').value;
       document.getElementById('tokenBlock').classList.toggle('hidden', !code);
@@ -85,7 +67,7 @@ function renderTable(data) {
 
     function formatDate(dateStr) {
       const d = new Date(dateStr);
-      return d.toISOString().replace('T', ' ').split('.')[0];
+      return d.toLocaleString('zh-TW');
     }
 
     function fetchOrders() {
@@ -99,18 +81,23 @@ function renderTable(data) {
         return;
       }
 
+      document.getElementById("stats").innerHTML = "🔄 查詢中，請稍候...";
+
       const url = `https://referral-report-api.onrender.com/orders?referral_code=${code}&access_token=${token}&created_at_min=${start.replace('T', ' ')}&created_at_max=${end.replace('T', ' ')}`;
+
       fetch(url)
         .then(res => res.json())
         .then(data => {
           if (data.message) {
             alert(data.message);
+            document.getElementById("stats").innerHTML = "";
             return;
           }
 
           renderTable(data);
           renderStats(data);
-          window._csvData = data; // 暫存給 CSV 匯出用
+          window._csvData = data;
+          window._csvMeta = { code, start, end };
         });
     }
 
@@ -144,6 +131,7 @@ function renderTable(data) {
 
     function exportCSV() {
       const data = window._csvData || [];
+      const meta = window._csvMeta || {};
       if (data.length === 0) return alert("沒有資料可匯出");
 
       const header = ["訂單編號", "成立時間", "金額", "付款狀態", "出貨狀態", "狀態", "備註"];
@@ -159,9 +147,12 @@ function renderTable(data) {
 
       const csvContent = [header, ...rows].map(e => e.join("\t")).join("\n");
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+      const filename = `referral_orders_${meta.code || 'unknown'}_${meta.start?.slice(0,10)}-${meta.end?.slice(0,10)}.csv`;
+
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "referral_orders.csv";
+      link.download = filename;
       link.click();
     }
   </script>
