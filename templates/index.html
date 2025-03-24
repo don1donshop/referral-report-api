@@ -44,6 +44,10 @@
   <div id="stats"></div>
   <button onclick="exportCSV()">📤 匯出報表 (CSV)</button>
 
+  <div id="infoBox" class="hidden" style="padding: 1em; background: #e0f7fa; border: 1px solid #4dd0e1; margin-bottom: 1em;">
+    👋 你正在以推薦碼 <b id="referralCodeDisplay"></b> 的身份查詢訂單。
+  </div>
+
   <table id="results">
     <thead>
       <tr>
@@ -155,6 +159,34 @@
       link.download = filename;
       link.click();
     }
+
+      window.onload = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("referral_code");
+    const token = urlParams.get("access_token");
+
+    if (code && token) {
+  document.getElementById("referralCodeDisplay").innerText = code;
+  document.getElementById("infoBox").classList.remove("hidden");
+}
+
+    if (code) {
+      const referralSelect = document.getElementById("referralCode");
+      referralSelect.value = code;
+      onCodeChange(); // 顯示 Token 輸入欄位
+    }
+
+    if (token) {
+      document.getElementById("accessToken").value = token;
+    }
+
+    // 預設今天的時間區段
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59);
+    document.getElementById("startTime").value = start.toISOString().slice(0, 16);
+    document.getElementById("endTime").value = end.toISOString().slice(0, 16);
+  };
   </script>
 </body>
 </html>
