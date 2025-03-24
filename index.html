@@ -60,6 +60,24 @@
   </table>
 
   <script>
+function renderTable(data) {
+  const tbody = document.querySelector("#results tbody");
+  tbody.innerHTML = "";
+  data.forEach(order => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${order.order_number}</td>
+      <td>${order.created_at}</td>
+      <td>${order.total_price}</td>
+      <td>${order.financial_status}</td>
+      <td>${order.fulfillment_status}</td>
+      <td>${order.is_cancelled ? "❌ 已取消" : "✅ 有效"}</td>
+      <td>${order.remark || ""}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
     function onCodeChange() {
       const code = document.getElementById('referralCode').value;
       document.getElementById('tokenBlock').classList.toggle('hidden', !code);
