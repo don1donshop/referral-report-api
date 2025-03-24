@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: referral-report-api
+    env: python
+    buildCommand: ""
+    startCommand: python app.py
+    envVars:
+      - key: EASYSTORE_API_KEY
+        value: bf227aac7aec54ea6abd5a78dd82a44a   # <<< 這是你目前的金鑰
