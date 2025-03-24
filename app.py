@@ -27,43 +27,53 @@ def get_orders():
     if not referral_code or not access_token:
         return jsonify({"error": "請提供 referral_code 與 access_token"}), 400
 
-    # 驗證 access_token 是否正確
     expected_token = ACCESS_TOKENS.get(referral_code.upper())
     if not expected_token or access_token != expected_token:
         return jsonify({"error": "授權失敗，token 不正確"}), 403
 
-    # 🗓️ 取得時間區段（預設近 7 天）
     created_at_min = request.args.get("created_at_min") or (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d 00:00:00")
     created_at_max = request.args.get("created_at_max") or datetime.now().strftime("%Y-%m-%d 23:59:59")
 
-    params = {
-        "limit": 100,
-        "fields": "id,order_number,created_at,total_price,financial_status,fulfillment_status,is_cancelled,referral,remark",
-        "created_at_min": created_at_min,
-        "created_at_max": created_at_max
-    }
     headers = {
         "EasyStore-Access-Token": EASYSTORE_API_TOKEN,
         "Accept": "application/json"
     }
 
-    response = requests.get(EASYSTORE_API_URL, params=params, headers=headers)
+    # 🌀 自動翻頁抓所有訂單
+    page = 1
+    all_orders = []
 
-    print("🔎 API 狀態碼:", response.status_code)
-    if response.status_code != 200:
-        print("❌ 回應錯誤：", response.text)
-        return jsonify({"error": "無法取得訂單資料"}), 500
+    while True:
+        params = {
+            "limit": 100,
+            "page": page,
+            "fields": "id,order_number,created_at,total_price,financial_status,fulfillment_status,is_cancelled,referral,remark",
+            "created_at_min": created_at_min,
+            "created_at_max": created_at_max
+        }
 
-    all_orders = response.json().get("orders", [])
+        response = requests.get(EASYSTORE_API_URL, params=params, headers=headers)
+
+        print(f"🔎 Page {page} - 狀態碼: {response.status_code}")
+        if response.status_code != 200:
+            print("❌ 回應錯誤：", response.text)
+            break
+
+        orders = response.json().get("orders", [])
+        if not orders:
+            break
+
+        all_orders.extend(orders)
+        page += 1
+
+    # 🎯 篩選指定推薦碼
     filtered = []
-
     print("🧾 開始列出每筆訂單的 Referral Code：")
     for order in all_orders:
         ref = order.get("referral")
         code = ref.get("code") if ref else "❌ 無推薦碼"
         print(f"📦 訂單：{order.get('order_number', '-')}, Referral Code: {code}")
 
-        # 若 referral_code 有填入就做比對
         if ref and code.lower() == referral_code.lower():
             filtered.append({
                 "order_number": order.get("order_number"),
@@ -76,8 +86,6 @@ def get_orders():
             })
 
     print(f"✅ 總共符合 {referral_code} 的訂單數：{len(filtered)}")
-
-    print("🟢 Render 版本：已更新 0324-debug-referral")
 
     if not filtered:
         return jsonify({"message": "查無符合的訂單"}), 200
