@@ -19,6 +19,7 @@ EASYSTORE_API_URL = "https://www.don1donshop.com/api/3.0/orders.json"
 EASYSTORE_API_TOKEN = os.environ.get("EASYSTORE_API_KEY") or "bf227aac7aec54ea6abd5a78dd82a44a"
 
 @app.route("/orders", methods=["GET"])
+
 def get_orders():
     referral_code = request.args.get("referral_code")
     access_token = request.args.get("access_token")
@@ -82,6 +83,40 @@ def get_orders():
         return jsonify({"message": "查無符合的訂單"}), 200
 
     return jsonify(filtered)
+
+@app.route("/orders/debug", methods=["GET"])
+def debug_referrals():
+    from flask import Response
+
+    # 🗓️ 時間區段（跟主 API 一樣）
+    created_at_min = request.args.get("created_at_min") or (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d 00:00:00")
+    created_at_max = request.args.get("created_at_max") or datetime.now().strftime("%Y-%m-%d 23:59:59")
+
+    params = {
+        "limit": 100,
+        "fields": "id,order_number,created_at,referral",
+        "created_at_min": created_at_min,
+        "created_at_max": created_at_max
+    }
+    headers = {
+        "EasyStore-Access-Token": EASYSTORE_API_TOKEN,
+        "Accept": "application/json"
+    }
+
+    response = requests.get(EASYSTORE_API_URL, params=params, headers=headers)
+    if response.status_code != 200:
+        return jsonify({"error": f"API 錯誤 {response.status_code}"}), 500
+
+    orders = response.json().get("orders", [])
+    lines = [f"🔍 共 {len(orders)} 筆訂單"]
+    for order in orders:
+        order_no = order.get("order_number", "-")
+        referral = order.get("referral")
+        code = referral.get("code") if referral else "❌ 無推薦碼"
+        lines.append(f"📦 訂單：{order_no}, Referral Code: {code}")
+
+    return Response("\n".join(lines), mimetype="text/plain")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
