@@ -76,6 +76,8 @@ def get_orders():
 
     print(f"✅ 總共符合 {referral_code} 的訂單數：{len(filtered)}")
 
+    print("🟢 Render 版本：已更新 0324-debug-referral")
+
     if not filtered:
         return jsonify({"message": "查無符合的訂單"}), 200
 
