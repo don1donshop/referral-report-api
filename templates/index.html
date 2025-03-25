@@ -32,7 +32,8 @@
   <button onclick="fetchOrders()">查詢訂單</button>
 
   <div id="stats"></div>
-  <button onclick="exportCSV()">📤 匯出報表 (CSV)</button>
+  <small id="statsNote" class="hidden" style="color: #888;">＊有效訂單：僅統計「已付款 且 未取消」的訂單</small>
+  <!-- <button onclick="exportCSV()">📤 匯出報表 (CSV)</button> -->
 
   <div id="infoBox" class="hidden" style="padding: 1em; background: #e0f7fa; border: 1px solid #4dd0e1; margin-bottom: 1em;">
     👋 你正在以推薦碼 <b id="referralCodeDisplay"></b> 的身份查詢訂單。
