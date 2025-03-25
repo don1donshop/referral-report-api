@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>📋 推薦人訂單查詢</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-  
 <body>
   <h1>📋 推薦人訂單查詢</h1>
 
@@ -28,16 +27,19 @@
   <label>結束時間：</label>
   <input type="datetime-local" id="endTime" />
 
-  <br>
+  <br />
   <button onclick="fetchOrders()">查詢訂單</button>
 
-  <div id="stats"></div>
-  <small id="statsNote" class="hidden" style="color: #888;">＊有效訂單：僅統計「已付款 且 未取消」的訂單</small>
-  <!-- <button onclick="exportCSV()">📤 匯出報表 (CSV)</button> -->
-
-  <div id="infoBox" class="hidden" style="padding: 1em; background: #e0f7fa; border: 1px solid #4dd0e1; margin-bottom: 1em;">
+  <div id="infoBox" class="hidden" style="padding: 1em; background: #e0f7fa; border: 1px solid #4dd0e1; margin-top: 1em;">
     👋 你正在以推薦碼 <b id="referralCodeDisplay"></b> 的身份查詢訂單。
   </div>
+
+  <div id="stats" style="margin-top: 1.5em;"></div>
+  <div id="statsNote" class="hidden" style="font-size: 0.9em; color: #555; margin-top: 0.5em;">
+    📌 統計僅包含「已付款」且「未取消」的訂單。
+  </div>
+
+  <!-- <button onclick="exportCSV()">📤 匯出報表 (CSV)</button> -->
 
   <table id="results">
     <thead>
@@ -47,14 +49,13 @@
         <th>金額</th>
         <th>付款狀態</th>
         <th>出貨狀態</th>
-        <th>狀態</th>
+        <th title="此為系統記錄，並不代表已付款">系統狀態</th>
         <th>備註</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <!-- ✅ JS 放在這裡，確保 HTML 已完成渲染 -->
   <script src="{{ url_for('static', filename='js/referral-report.js') }}"></script>
 </body>
 </html>

@@ -45,9 +45,9 @@ function renderTable(data) {
   tbody.innerHTML = "";
 
   data.forEach(order => {
-    const row = document.createElement("tr");
     const statusLabel = order.is_cancelled ? "❌ 已取消" : "✅ 有效（系統記錄）";
 
+    const row = document.createElement("tr");
     row.innerHTML = `
       <td>${order.order_number}</td>
       <td>${formatDate(order.created_at)}</td>
