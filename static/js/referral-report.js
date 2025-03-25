@@ -45,21 +45,25 @@ function renderTable(data) {
   tbody.innerHTML = "";
 
   data.forEach(order => {
-    const statusLabel = order.is_cancelled ? "❌ 已取消" : "✅ 有效（系統記錄）";
-
     const row = document.createElement("tr");
+
+    const payment = order.financial_status === "paid" ? "已付款" : "未付款";
+    const fulfillment = order.fulfillment_status === "fulfilled" ? "已出貨" : "未出貨";
+    const status = order.is_cancelled ? "❌" : "✅";
+
     row.innerHTML = `
       <td>${order.order_number}</td>
       <td>${formatDate(order.created_at)}</td>
       <td>${order.total_price}</td>
-      <td>${order.financial_status}</td>
-      <td>${order.fulfillment_status}</td>
-      <td title="不代表已付款">${statusLabel}</td>
+      <td>${payment}</td>
+      <td>${fulfillment}</td>
+      <td>${status}</td>
       <td>${order.remark || ""}</td>
     `;
     tbody.appendChild(row);
   });
 }
+
 
 function renderStats(data) {
   const paid = data.filter(o => o.financial_status === "paid" && !o.is_cancelled);
