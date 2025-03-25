@@ -57,6 +57,7 @@ function renderTable(data) {
       <td>${order.total_price}</td>
       <td>${payment}</td>
       <td>${fulfillment}</td>
+      <td>${order.shipping_fee || 0}</td>
       <td>${status}</td>
       <td>${order.remark || ""}</td>
     `;
