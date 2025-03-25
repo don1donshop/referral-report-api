@@ -88,7 +88,7 @@ function exportCSV() {
     o.total_price,
     o.financial_status,
     o.fulfillment_status,
-    o.is_cancelled ? "❌ 已取消" : "✅ 有效（系統記錄）",
+    o.is_cancelled ? "❌" : "✅",
     o.remark || ""
   ]);
 
