@@ -86,8 +86,8 @@ function exportCSV() {
     o.order_number,
     formatDate(o.created_at),
     o.total_price,
-    o.financial_status,
-    o.fulfillment_status,
+    o.financial_status?.replace("paid", "已付款") || "未付款",
+    o.fulfillment_status?.replace("fulfilled", "已出貨") || "未出貨",
     o.is_cancelled ? "❌" : "✅",
     o.remark || ""
   ]);
