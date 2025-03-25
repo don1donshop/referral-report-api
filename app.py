@@ -4,7 +4,8 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-app = Flask(__name__)
+# 📦 Flask 應用初始化，指定 static 和 templates 路徑
+app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
 # 🛡️ Access Token 安全驗證機制
@@ -18,12 +19,12 @@ ACCESS_TOKENS = {
 EASYSTORE_API_URL = "https://www.don1donshop.com/api/3.0/orders.json"
 EASYSTORE_API_TOKEN = os.environ.get("EASYSTORE_API_KEY") or "bf227aac7aec54ea6abd5a78dd82a44a"
 
-# 📄 首頁（前端）
+# 🌐 首頁：渲染前端 HTML
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
-# 🔍 查詢訂單
+# 🔍 查詢訂單 API
 @app.route("/orders", methods=["GET"])
 def get_orders():
     referral_code = request.args.get("referral_code")
@@ -36,18 +37,19 @@ def get_orders():
     if not expected_token or access_token != expected_token:
         return jsonify({"error": "授權失敗，token 不正確"}), 403
 
-    # 🗓️ 取得時間區段
+    # 🗓️ 時間區間（預設近七天）
     created_at_min = request.args.get("created_at_min") or (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d 00:00:00")
     created_at_max = request.args.get("created_at_max") or datetime.now().strftime("%Y-%m-%d 23:59:59")
 
     all_orders = []
     page = 1
-    max_pages = 10  # 最多撈取 1000 筆（每頁 100 筆）
+    max_pages = 10  # 最多撈 1000 筆資料（每頁最多 100 筆）
+
     while page <= max_pages:
         params = {
             "limit": 100,
             "page": page,
-            "fields": "id,order_number,created_at,total_price,financial_status,fulfillment_status,is_cancelled,referral,remark",
+            "fields": "id,order_number,created_at,total_price,financial_status,fulfillment_status,is_cancelled,referral,remark,shipping_fees",
             "created_at_min": created_at_min,
             "created_at_max": created_at_max
         }
@@ -66,17 +68,23 @@ def get_orders():
         all_orders.extend(orders)
 
         if len(orders) < 100:
-            break  # 已到最後一頁
+            break  # 已經撈到最後一頁
         page += 1
 
-    # 過濾符合推薦碼的訂單
+    # 過濾出符合推薦碼的訂單
     filtered = []
     print("🧾 開始列出每筆訂單的 Referral Code：")
     for order in all_orders:
         ref = order.get("referral")
         code = ref.get("code") if ref else "❌ 無推薦碼"
         print(f"📦 訂單：{order.get('order_number', '-')}, Referral Code: {code}")
+
         if ref and code.lower() == referral_code.lower():
+            # ⛴️ 擷取運費資訊
+            shipping_fee = 0.0
+            if order.get("shipping_fees"):
+                shipping_fee = sum(float(fee.get("price", 0)) for fee in order["shipping_fees"])
+
             filtered.append({
                 "order_number": order.get("order_number"),
                 "created_at": order.get("created_at"),
@@ -84,7 +92,8 @@ def get_orders():
                 "financial_status": order.get("financial_status"),
                 "fulfillment_status": order.get("fulfillment_status"),
                 "is_cancelled": order.get("is_cancelled", False),
-                "remark": order.get("remark")
+                "remark": order.get("remark"),
+                "shipping_fee": shipping_fee
             })
 
     print(f"✅ 總共符合 {referral_code} 的訂單數：{len(filtered)}")
@@ -93,6 +102,6 @@ def get_orders():
 
     return jsonify(filtered)
 
-# ✅ 執行伺服器
+# ✅ 執行主程式
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

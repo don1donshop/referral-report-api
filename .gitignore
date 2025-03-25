@@ -1,3 +1,20 @@
+# Python 環境
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# 虛擬環境
+venv/
 .env
+.env.*
+
+# 系統檔案
+.DS_Store
+*.log
+
+# 資料庫檔案
+*.sqlite3
