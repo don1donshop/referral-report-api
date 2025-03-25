@@ -1,0 +1,51 @@
+body {
+  font-family: sans-serif;
+  padding: 2em;
+  background: #f9f9f9;
+}
+h1 {
+  margin-bottom: 0.5em;
+}
+label {
+  display: block;
+  margin-top: 1em;
+}
+input,
+select {
+  padding: 0.5em;
+  width: 300px;
+  margin-top: 0.2em;
+}
+button {
+  padding: 0.6em 1.2em;
+  margin-top: 1em;
+}
+table {
+  margin-top: 2em;
+  border-collapse: collapse;
+  width: 100%;
+  background: white;
+}
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 0.5em;
+  text-align: center;
+}
+th {
+  background: #eee;
+}
+.hidden {
+  display: none;
+}
+#stats {
+  margin-top: 1em;
+  font-weight: bold;
+  color: #333;
+}
+#infoBox {
+  padding: 1em;
+  background: #e0f7fa;
+  border: 1px solid #4dd0e1;
+  margin-bottom: 1em;
+}

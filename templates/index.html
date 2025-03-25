@@ -3,22 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>📋 推薦人訂單查詢</title>
-  <style>
-    body { font-family: sans-serif; padding: 2em; background: #f9f9f9; }
-    h1 { margin-bottom: 0.5em; }
-    label { display: block; margin-top: 1em; }
-    input, select { padding: 0.5em; width: 300px; margin-top: 0.2em; }
-    button { padding: 0.6em 1.2em; margin-top: 1em; }
-    table { margin-top: 2em; border-collapse: collapse; width: 100%; background: white; }
-    th, td { border: 1px solid #ddd; padding: 0.5em; text-align: center; }
-    th { background: #eee; }
-    .hidden { display: none; }
-    #stats { margin-top: 1em; font-weight: bold; color: #333; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-
-<script src="{{ url_for('static', filename='js/referral-report.js') }}"></script>
-
+  
 <body>
   <h1>📋 推薦人訂單查詢</h1>
 
@@ -65,5 +52,8 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <!-- ✅ JS 放在這裡，確保 HTML 已完成渲染 -->
+  <script src="{{ url_for('static', filename='js/referral-report.js') }}"></script>
 </body>
 </html>
