@@ -69,6 +69,7 @@ function renderStats(data) {
 
 function exportCSV() {
   const data = window._csvData || [];
+  const meta = window._csvMeta || {};
   if (data.length === 0) return alert("沒有資料可匯出");
 
   const header = ["訂單編號", "成立時間", "金額", "付款狀態", "出貨狀態", "狀態", "備註"];
@@ -83,13 +84,26 @@ function exportCSV() {
   ]);
 
   const csvContent = [header, ...rows].map(e => e.join("\t")).join("\n");
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // UTF-8 BOM
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
   const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "referral_orders.csv";
+
+  const formatForFilename = (datetime) => {
+    const d = new Date(datetime);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}_${hh}${min}`;
+  };
+
+  const filename = `referral_orders_${meta.code}_${formatForFilename(meta.start)}_to_${formatForFilename(meta.end)}.csv`;
+  link.download = filename;
   link.click();
 }
+
 
 window.onload = () => {
   const urlParams = new URLSearchParams(window.location.search);
