@@ -57,7 +57,6 @@ function renderTable(data) {
       <td>${order.total_price}</td>
       <td>${payment}</td>
       <td>${fulfillment}</td>
-      <td>${order.shipping_fee || 0}</td>
       <td>${status}</td>
       <td>${order.remark || ""}</td>
     `;
@@ -70,12 +69,12 @@ function renderStats(data) {
   const paid = data.filter(o => o.financial_status === "paid" && !o.is_cancelled);
   const count = paid.length;
   const total = paid.reduce((sum, o) => sum + parseFloat(o.total_price), 0);
-  const shipping = paid.reduce((sum, o) => sum + parseFloat(o.shipping_fee || 0), 0);
+  //const shipping = paid.reduce((sum, o) => sum + parseFloat(o.shipping_fee || 0), 0);
 
   const statsBox = document.getElementById("stats");
   statsBox.innerHTML =
     count > 0
-      ? `📊 統計：共 <b>${count}</b> 筆有效訂單（已付款＋未取消），總金額：<b>NT$ ${total.toFixed(0)}</b>，總運費：<b>NT$ ${shipping.toFixed(0)}</b>`
+      ? `📊 統計：共 <b>${count}</b> 筆有效訂單（已付款＋未取消），總金額：<b>NT$ ${total.toFixed(0)}</b>`
       : `📊 沒有有效訂單（已付款＋未取消）`;
 
   document.getElementById("statsNote").classList.remove("hidden");
