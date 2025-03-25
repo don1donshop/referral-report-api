@@ -10,10 +10,9 @@
 
 可直接帶入參數使用：
 
+```
 https://referral-report-api.onrender.com/?referral_code=LAVONS88&access_token=token_lavons88_123
-
-yaml
-複製
+```
 
 ---
 
@@ -44,15 +43,25 @@ yaml
 
 ```bash
 pip install -r requirements.txt
-🚀 啟動伺服器
-bash
-複製
-python app.py
-→ 瀏覽器開啟 http://localhost:5000
+```
 
-📁 專案結構
-csharp
-複製
+### 🚀 啟動伺服器
+
+```bash
+python app.py
+```
+
+開啟瀏覽器造訪：
+
+```
+http://localhost:5000
+```
+
+---
+
+## 📁 專案結構
+
+```
 referral-report/
 │
 ├── app.py                     # Flask 主程式
@@ -67,29 +76,50 @@ referral-report/
 │   │   └── style.css          # 前端樣式
 │   └── js/
 │       └── referral-report.js # 前端邏輯與資料處理
-🔑 推薦碼對照表
-團主名稱	推薦碼	Access Token	專屬連結
-Lavon	LAVONS88	token_lavons88_123	點我查詢
-Winnie	LAVONS_WINNIE	token_winnie_456	點我查詢
-小杉	LAVONS_XIAOSHAN	token_xiaoshan_789	點我查詢
-📤 匯出報表說明
-點擊「📤 匯出報表」按鈕即可下載檔案
+```
 
-匯出格式為 UTF-8 with BOM，避免 Excel 開啟時出現亂碼
+---
 
-欄位包含：訂單編號、成立時間、金額、付款狀態、出貨狀態、是否取消、備註
+## 🔑 推薦碼對照表
 
-🔮 延伸功能規劃
-📍 團主登入介面（帳號密碼）
+| 團主名稱 | 推薦碼 | Access Token | 專屬連結 |
+|----------|--------|--------------|-----------|
+| Lavon    | LAVONS88 | token_lavons88_123 | [點我查詢](https://referral-report-api.onrender.com/?referral_code=LAVONS88&access_token=token_lavons88_123) |
+| Winnie   | LAVONS_WINNIE | token_winnie_456 | [點我查詢](https://referral-report-api.onrender.com/?referral_code=LAVONS_WINNIE&access_token=token_winnie_456) |
+| 小杉     | LAVONS_XIAOSHAN | token_xiaoshan_789 | [點我查詢](https://referral-report-api.onrender.com/?referral_code=LAVONS_XIAOSHAN&access_token=token_xiaoshan_789) |
 
-📆 自動寄送週報 / 月報
+---
 
-📈 團購銷售圖表視覺化（折線圖 / 圓餅圖）
+## 📤 匯出報表說明
 
-🔧 管理者後台（新增推薦碼、管理訂單）
+- 點擊「📤 匯出報表」按鈕即可下載 CSV 檔案
+- 匯出格式為 **UTF-8 with BOM**，避免 Excel 開啟時亂碼
+- 欄位包含：
+  - 訂單編號
+  - 成立時間
+  - 金額
+  - 付款狀態
+  - 出貨狀態
+  - 是否取消
+  - 備註
 
-🤝 貢獻與聯絡
+---
+
+## 🔮 延伸功能規劃（未來）
+
+- 📍 團主登入介面（帳號密碼）
+- 📆 自動寄送週報 / 月報
+- 📈 團購銷售圖表視覺化（折線圖 / 圓餅圖）
+- 🔧 管理者後台（新增推薦碼、管理訂單）
+
+---
+
+## 🤝 貢獻與聯絡
+
 如果你對本系統有任何建議或想法，歡迎發 Issue / PR 或與我聯絡 🙌
+
 📬 Email：don1donshop@gmail.com
+
+---
 
 🎉 感謝使用本推薦人訂單查詢系統，希望幫助你更高效地追蹤推廣成果！
