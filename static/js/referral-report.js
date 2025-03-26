@@ -55,8 +55,8 @@ function renderTable(data) {
       <td>${order.order_number}</td>
       <td>${formatDate(order.created_at)}</td>
       <td>${order.total_price}</td>
-      <td>${payment}</td>
-      <td>${fulfillment}</td>
+      <td>${order.financial_status}</td>
+      <td>${order.fulfillment_status}</td>
       <td>${status}</td>
       <td>${order.remark || ""}</td>
     `;
@@ -90,8 +90,8 @@ function exportCSV() {
     o.order_number,
     formatDate(o.created_at),
     o.total_price,
-    o.financial_status?.replace("paid", "已付款") || "未付款",
-    o.fulfillment_status?.replace("fulfilled", "已出貨") || "未出貨",
+    o.financial_status,
+    o.fulfillment_status,
     o.is_cancelled ? "❌" : "✅",
     o.remark || ""
   ]);
