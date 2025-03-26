@@ -4,57 +4,58 @@
   <meta charset="UTF-8" />
   <title>📋 推薦人訂單查詢</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <h1>📋 推薦人訂單查詢</h1>
+  <div class="container">
+    <h1>📋 推薦人訂單查詢</h1>
 
-  <label>推薦碼：</label>
-  <select id="referralCode" onchange="onCodeChange()">
-    <option value="">請選擇推薦碼</option>
-    <option value="LAVONS88">LAVONS88</option>
-    <option value="LAVONS_WINNIE">LAVONS_WINNIE</option>
-    <option value="LAVONS_XIAOSHAN">LAVONS_XIAOSHAN</option>
-  </select>
+    <label>推薦碼：</label>
+    <select id="referralCode" onchange="onCodeChange()">
+      <option value="">請選擇推薦碼</option>
+      <option value="LAVONS88">LAVONS88</option>
+      <option value="LAVONS_WINNIE">LAVONS_WINNIE</option>
+      <option value="LAVONS_XIAOSHAN">LAVONS_XIAOSHAN</option>
+    </select>
 
-  <div id="tokenBlock" class="hidden">
-    <label>Access Token：</label>
-    <input type="password" id="accessToken" placeholder="請輸入 token" />
+    <div id="tokenBlock" class="hidden">
+      <label>Access Token：</label>
+      <input type="password" id="accessToken" placeholder="請輸入 token" />
+    </div>
+
+    <label>起始時間：</label>
+    <input type="datetime-local" id="startTime" />
+
+    <label>結束時間：</label>
+    <input type="datetime-local" id="endTime" />
+
+    <button onclick="fetchOrders()">查詢訂單</button>
+
+    <div id="infoBox" class="hidden">
+      👋 你正在以推薦碼 <b id="referralCodeDisplay"></b> 的身份查詢訂單。
+    </div>
+
+    <div id="stats"></div>
+    <div id="statsNote" class="hidden">📌 統計僅包含「已付款」「未退款」「未取消」的訂單。</div>
+    <button id="csvBtn" class="hidden">📤 匯出報表 (CSV)</button>
+
+    <div class="table_mb">
+      <table id="results">
+        <thead>
+          <tr>
+            <th>訂單編號</th>
+            <th>成立時間</th>
+            <th>金額</th>
+            <th>付款狀態</th>
+            <th>出貨狀態</th>
+            <th>系統狀態</th>
+            <th>備註</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
-
-  <label>起始時間：</label>
-  <input type="datetime-local" id="startTime" />
-
-  <label>結束時間：</label>
-  <input type="datetime-local" id="endTime" />
-
-  <br />
-  <button onclick="fetchOrders()">查詢訂單</button>
-
-  <div id="infoBox" class="hidden" style="padding: 1em; background: #e0f7fa; border: 1px solid #4dd0e1; margin-top: 1em;">
-    👋 你正在以推薦碼 <b id="referralCodeDisplay"></b> 的身份查詢訂單。
-  </div>
-
-  <div id="stats" style="margin-top: 1.5em;"></div>
-  <div id="statsNote">
-    📌 統計僅包含「已付款」且「未取消」且「未退款」的訂單。
-  </div>  
-
-  <button id="csvBtn" class="hidden">📤 匯出報表 (CSV)</button>
-
-  <table id="results">
-    <thead>
-      <tr>
-        <th>訂單編號</th>
-        <th>成立時間</th>
-        <th>金額</th>
-        <th>付款狀態</th>
-        <th>出貨狀態</th>
-        <th>系統狀態</th>
-        <th>備註</th>
-      </tr>
-    </thead>    
-    <tbody></tbody>
-  </table>
 
   <script src="{{ url_for('static', filename='js/referral-report.js') }}"></script>
 </body>
