@@ -45,19 +45,29 @@ function renderTable(data) {
   tbody.innerHTML = "";
 
   data.forEach(order => {
+    // 付款狀態
+    let paidStatus = "未付款";
+    if (order.financial_status === "paid") paidStatus = "已付款";
+    else if (order.financial_status === "refunded") paidStatus = "已退款";
+
+    // 出貨狀態
+    let shipStatus = "未出貨";
+    if (order.fulfillment_status === "fulfilled") shipStatus = "已出貨";
+    else if (order.fulfillment_status === "restocked") shipStatus = "已退貨";
+
+    // 系統狀態 ✅ or ❌
+    const systemStatus = (order.is_cancelled || order.is_refunded)
+      ? "❌"
+      : "✅";
+
     const row = document.createElement("tr");
-
-    const payment = order.financial_status === "paid" ? "已付款" : "未付款";
-    const fulfillment = order.fulfillment_status === "fulfilled" ? "已出貨" : "未出貨";
-    const status = order.is_cancelled ? "❌" : "✅";
-
     row.innerHTML = `
       <td>${order.order_number}</td>
       <td>${formatDate(order.created_at)}</td>
       <td>${order.total_price}</td>
-      <td>${order.financial_status}</td>
-      <td>${order.fulfillment_status}</td>
-      <td>${status}</td>
+      <td>${paidStatus}</td>
+      <td>${shipStatus}</td>
+      <td>${systemStatus}</td>
       <td>${order.remark || ""}</td>
     `;
     tbody.appendChild(row);
@@ -65,20 +75,28 @@ function renderTable(data) {
 }
 
 
+
 function renderStats(data) {
-  const paid = data.filter(o => o.financial_status === "paid" && !o.is_cancelled);
+  // 統計：已付款 && !已取消 && !已退款
+  const paid = data.filter(o =>
+    o.financial_status === "paid" &&
+    !o.is_cancelled &&
+    !o.is_refunded
+  );
+
   const count = paid.length;
   const total = paid.reduce((sum, o) => sum + parseFloat(o.total_price), 0);
-  //const shipping = paid.reduce((sum, o) => sum + parseFloat(o.shipping_fee || 0), 0);
+  const shipping = paid.reduce((sum, o) => sum + parseFloat(o.shipping_fee || 0), 0);
 
   const statsBox = document.getElementById("stats");
   statsBox.innerHTML =
     count > 0
-      ? `📊 統計：共 <b>${count}</b> 筆有效訂單（已付款＋未取消），總金額：<b>NT$ ${total.toFixed(0)}</b>`
-      : `📊 沒有有效訂單（已付款＋未取消）`;
+      ? `📊 統計：共 <b>${count}</b> 筆有效訂單（已付款＋未取消＋未退款），總金額：<b>NT$ ${total.toFixed(0)}</b>，總運費：<b>NT$ ${shipping.toFixed(0)}</b>`
+      : `📊 沒有有效訂單（已付款＋未取消＋未退款）`;
 
   document.getElementById("statsNote").classList.remove("hidden");
 }
+
 
 function exportCSV() {
   const data = window._csvData || [];

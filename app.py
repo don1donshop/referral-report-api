@@ -49,7 +49,11 @@ def get_orders():
         params = {
             "limit": 100,
             "page": page,
-            "fields": "id,order_number,created_at,total_price,financial_status,fulfillment_status,is_cancelled,referral,remark,shipping_fees",
+            "fields": ",".join([
+                "id", "order_number", "created_at", "total_price",
+                "financial_status", "fulfillment_status", "is_cancelled",
+                "referral", "remark", "shipping_fees", "refunds", "line_items"
+            ]),
             "created_at_min": created_at_min,
             "created_at_max": created_at_max
         }
@@ -71,7 +75,7 @@ def get_orders():
             break  # 已經撈到最後一頁
         page += 1
 
-    # 過濾出符合推薦碼的訂單
+    # 🎯 過濾出符合推薦碼的訂單
     filtered = []
     print("🧾 開始列出每筆訂單的 Referral Code：")
     for order in all_orders:
@@ -85,6 +89,12 @@ def get_orders():
             if order.get("shipping_fees"):
                 shipping_fee = sum(float(fee.get("price", 0)) for fee in order["shipping_fees"])
 
+            # 💸 判斷是否退款
+            is_refunded = order.get("financial_status") == "refunded"
+            refund_amount = 0.0
+            if order.get("refunds"):
+                refund_amount = sum(float(refund.get("amount", 0)) for refund in order["refunds"])
+
             filtered.append({
                 "order_number": order.get("order_number"),
                 "created_at": order.get("created_at"),
@@ -93,7 +103,9 @@ def get_orders():
                 "fulfillment_status": order.get("fulfillment_status"),
                 "is_cancelled": order.get("is_cancelled", False),
                 "remark": order.get("remark"),
-                "shipping_fee": shipping_fee
+                "shipping_fee": shipping_fee,
+                "is_refunded": is_refunded,
+                "refund_amount": refund_amount
             })
 
     print(f"✅ 總共符合 {referral_code} 的訂單數：{len(filtered)}")
