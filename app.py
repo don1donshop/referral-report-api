@@ -16,6 +16,17 @@ ACCESS_TOKENS = {
 EASYSTORE_API_URL = "https://www.don1donshop.com/api/3.0/orders.json"
 EASYSTORE_API_TOKEN = os.environ.get("EASYSTORE_API_KEY") or "bf227aac7aec54ea6abd5a78dd82a44a"
 
+# 單品 SKU 白名單（LAVONS 品項）
+LAVONS_SKU_WHITELIST = {
+    'LA02-4573', 'LA03-4610', 'LA02-2351', 'LA02-2368', 'LA02-4566',
+    'LA03-4603', 'LA02-4580', 'LA03-4627', 'LA02-1514', 'LA02-2863',
+    'LA02-0043', 'LA02-2832', 'LA02-0029', 'LA02-9510', 'LA02-9534',
+    'LA02-4597', 'LA03-4634', 'LA02-3729', 'LA02-1538', 'LA02-1545',
+    'LA02-0173', 'LA02-0418', 'LA02-2399', 'LA02-2405', 'LA02-0098',
+    'LA02-3743', 'LA02-1521', 'LA02-0074', 'LA02-2801', 'LA02-0197',
+    'LA02-0432', 'LA02-2375', 'LA02-2382'
+}
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
@@ -71,6 +82,7 @@ def get_orders():
 
     filtered = []
     seen_order_numbers = set()
+    sku_stats = {}
 
     for order in all_orders:
         ref = order.get("referral")
@@ -91,6 +103,25 @@ def get_orders():
             if order.get("refunds"):
                 refund_amount = sum(float(refund.get("amount", 0)) for refund in order["refunds"])
 
+            line_items = order.get("line_items", [])
+            for item in line_items:
+                raw_sku = item.get("sku", "")
+                quantity = int(item.get("quantity", 0))
+
+                # 拆解 SKU 字串，例如："LA02-4580,LA03-4627*5"
+                sku_parts = [sku.strip() for sku in raw_sku.split(",") if sku.strip()]
+                for part in sku_parts:
+                    if "*" in part:
+                        base_sku, qty = part.split("*")
+                        base_sku = base_sku.strip()
+                        qty = int(qty.strip())
+                    else:
+                        base_sku = part.strip()
+                        qty = 1
+
+                    if base_sku in LAVONS_SKU_WHITELIST:
+                        sku_stats[base_sku] = sku_stats.get(base_sku, 0) + qty * quantity
+
             filtered.append({
                 "order_number": order.get("order_number"),
                 "created_at": order.get("created_at"),
@@ -105,10 +136,12 @@ def get_orders():
             })
 
     print(f"✅ 符合推薦碼 {referral_code} 的不重複訂單數：{len(filtered)}")
-    if not filtered:
-        return jsonify({"message": "查無符合的訂單"}), 200
+    print(f"📦 單品統計：{sku_stats}")
 
-    return jsonify(filtered)
+    return jsonify({
+        "orders": filtered,
+        "sku_stats": sku_stats
+    })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
