@@ -138,6 +138,8 @@ tbody tr:hover {
   display: none;
 }
 
+
+
 /* === 手機版調整 === */
 @media (max-width: 768px) {
   body {
@@ -174,5 +176,66 @@ tbody tr:hover {
 
   tbody {
     font-size: 0.8rem;
+  }
+}
+
+/* === 📦 單品銷售統計區塊 === */
+.feature-block {
+  margin-top: 2em;
+  padding: 1.2em;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f7f8fa;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+#skuStatsBlock h2 {
+  margin-top: 0;
+  font-size: 1.2em;
+  color: #333;
+  margin-bottom: 1em;
+}
+
+#skuStatsTable {
+  width: 100%;
+  min-width: 500px;
+  border-collapse: collapse;
+  font-size: 0.95em;
+  background-color: #fff;
+}
+
+#skuStatsTable th,
+#skuStatsTable td {
+  border: 1px solid #ccc;
+  padding: 0.7em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+#skuStatsTable th {
+  background-color: #f1f1f1;
+  color: #444;
+}
+
+#skuStatsTable tr:nth-child(even) {
+  background-color: #fcfcfc;
+}
+
+#skuStatsTable tbody tr:hover {
+  background-color: #e0f7fa;
+  transition: background-color 0.2s ease;
+}
+
+/* RWD: 中螢幕調整表格字體 */
+@media screen and (max-width: 900px) {
+  #skuStatsTable {
+    font-size: 0.9em;
+  }
+}
+/* RWD: 小螢幕調整表格字體 */
+@media screen and (max-width: 600px) {
+  #skuStatsTable {
+    font-size: 0.85em;
   }
 }

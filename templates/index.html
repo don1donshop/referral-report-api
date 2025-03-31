@@ -38,7 +38,17 @@
     <div id="stats"></div>
     <div id="statsNote" class="hidden">📌 統計僅包含「已付款」「未退款」「未取消」的訂單。</div>
     <button id="csvBtn" class="hidden">📤 匯出報表 (CSV)</button>
-
+    <!-- 商品統計明細區塊 -->
+    <div id="skuStatsBlock" class="feature-block hidden">
+      <h2>📦 單品銷售統計</h2>
+      <table id="skuStatsTable">
+        <thead>
+          <tr><th>單品 SKU</th><th>商品名稱</th><th>總數量</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <!-- 訂單各項狀態區塊 -->
     <div class="table_mb">
       <table id="results">
         <thead>
