@@ -182,7 +182,10 @@ function parseSkuString(rawSku) {
 
 function renderSkuStats(orderList) {
   const skuCountMap = {};
+
   orderList.forEach(order => {
+    if (!order.line_items || !Array.isArray(order.line_items)) return;
+
     order.line_items.forEach(item => {
       const parsed = parseSkuString(item.sku);
       for (let sku in parsed) {
@@ -203,3 +206,4 @@ function renderSkuStats(orderList) {
 
   document.getElementById("skuStatsBlock").classList.remove("hidden");
 }
+
