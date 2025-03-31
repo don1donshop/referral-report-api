@@ -56,7 +56,6 @@ function fetchOrders() {
 
       renderTable(data);
       renderStats(data);
-      renderSkuStats(data);
       window._csvData = data;
       window._csvMeta = { code, start, end };
     });
@@ -131,3 +130,53 @@ window.onload = () => {
   document.getElementById("startTime").value = start.toISOString().slice(0, 16);
   document.getElementById("endTime").value = end.toISOString().slice(0, 16);
 };
+
+function renderSkuStats(orderList) {
+  const skuCountMap = {};
+
+  if (!Array.isArray(orderList)) return;
+
+  orderList.forEach(order => {
+    let items = [];
+
+    // ✅ 1. 有 line_items 就用它
+    if (Array.isArray(order.line_items)) {
+      items = order.line_items;
+    }
+
+    // ✅ 2. 沒有 line_items → 嘗試 shipping_fees 備援
+    else if (
+      Array.isArray(order.shipping_fees) &&
+      Array.isArray(order.shipping_fees[0]?.calculation_params?.profile_items)
+    ) {
+      items = order.shipping_fees[0].calculation_params.profile_items;
+    }
+
+    // ✅ 3. 如果有 order.sku → 單品訂單，獨立構造 item
+    else if (order.sku) {
+      items = [{ sku: order.sku }];
+    }
+
+    // ✅ 解析每個商品的 SKU
+    items.forEach(item => {
+      if (!item.sku) return;
+
+      const parsed = parseSkuString(item.sku);
+      for (let sku in parsed) {
+        if (skuNameMap[sku]) {
+          skuCountMap[sku] = (skuCountMap[sku] || 0) + parsed[sku];
+        }
+      }
+    });
+  });
+
+  const tbody = document.querySelector("#skuStatsTable tbody");
+  tbody.innerHTML = "";
+
+  Object.entries(skuCountMap).forEach(([sku, qty]) => {
+    const row = `<tr><td>${sku}</td><td>${skuNameMap[sku]}</td><td>${qty}</td></tr>`;
+    tbody.insertAdjacentHTML("beforeend", row);
+  });
+
+  document.getElementById("skuStatsBlock").classList.remove("hidden");
+}
