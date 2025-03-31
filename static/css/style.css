@@ -123,6 +123,7 @@ tbody tr:hover {
 
 .badge-paid      { background: #4caf50; }
 .badge-unpaid    { background: #9e9e9e; }
+.badge-pending    { background: #9e9e9e; }
 .badge-refunded  { background: #f44336; }
 
 .badge-fulfilled    { background: #2196f3; }
