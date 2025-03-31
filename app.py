@@ -16,6 +16,20 @@ ACCESS_TOKENS = {
 EASYSTORE_API_URL = "https://www.don1donshop.com/api/3.0/orders.json"
 EASYSTORE_API_TOKEN = os.environ.get("EASYSTORE_API_KEY") or "bf227aac7aec54ea6abd5a78dd82a44a"
 
+def parse_sku_string(raw_sku):
+    result = {}
+    if not raw_sku:
+        return result
+    entries = raw_sku.split(",")
+    for entry in entries:
+        if "*" in entry:
+            sku, qty = entry.split("*")
+            qty = int(qty)
+        else:
+            sku, qty = entry, 1
+        result[sku] = result.get(sku, 0) + qty
+    return result
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
@@ -46,7 +60,7 @@ def get_orders():
             "fields": ",".join([
                 "id", "order_number", "created_at", "total_price",
                 "financial_status", "fulfillment_status", "is_cancelled",
-                "referral", "remark", "shipping_fees", "refunds", "line_items"
+                "referral", "remark", "shipping_fees", "refunds", "line_items", "sku"
             ]),
             "created_at_min": created_at_min,
             "created_at_max": created_at_max
@@ -68,6 +82,26 @@ def get_orders():
         if len(orders) < 100:
             break
         page += 1
+
+    # 🧮 統計單品 SKU 數量
+    sku_stats = {}
+    for order in all_orders:
+        items = []
+
+        if isinstance(order.get("line_items"), list):
+            items = order["line_items"]
+        elif (
+            isinstance(order.get("shipping_fees"), list)
+            and isinstance(order["shipping_fees"][0].get("calculation_params", {}).get("profile_items"), list)
+        ):
+            items = order["shipping_fees"][0]["calculation_params"]["profile_items"]
+        elif order.get("sku"):
+            items = [{"sku": order["sku"]}]
+
+        for item in items:
+            parsed = parse_sku_string(item.get("sku"))
+            for sku, qty in parsed.items():
+                sku_stats[sku] = sku_stats.get(sku, 0) + qty
 
     filtered = []
     seen_order_numbers = set()
@@ -108,7 +142,10 @@ def get_orders():
     if not filtered:
         return jsonify({"message": "查無符合的訂單"}), 200
 
-    return jsonify(filtered)
+    return jsonify({
+        "orders": filtered,
+        "sku_stats": sku_stats
+    })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
