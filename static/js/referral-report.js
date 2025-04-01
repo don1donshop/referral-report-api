@@ -22,8 +22,8 @@ function getBadge(type, value) {
       restocked: `<span class="badge badge-restocked">已退貨</span>`
     },
     system: {
-      valid: `<span class="badge badge-ok">✅</span>`,
-      cancelled: `<span class="badge badge-fail">❌</span>`
+      valid: `<span class="badge badge-ok" title="系統記錄為有效訂單">✅</span>`,
+      cancelled: `<span class="badge badge-fail" title="取消或不列入統計">❌</span>`
     }
   };
   return map[type][value] || "-";
@@ -43,7 +43,7 @@ function fetchOrders() {
   document.getElementById("stats").innerHTML = "🔄 查詢中，請稍候...";
   document.getElementById("statsNote").classList.add("hidden");
 
-  const url = `/orders?referral_code=${code}&access_token=${token}&created_at_min=${start.replace('T', ' ')}&created_at_max=${end.replace('T', ' ')}`;
+  const url = `https://referral-report-api.onrender.com/orders?referral_code=${code}&access_token=${token}&created_at_min=${start.replace('T', ' ')}&created_at_max=${end.replace('T', ' ')}`;
 
   fetch(url)
     .then(res => res.json())
@@ -54,10 +54,10 @@ function fetchOrders() {
         return;
       }
 
-      renderTable(data.orders);
-      renderStats(data.orders);
-
-      window._csvData = data.orders;
+      renderTable(data);
+      renderStats(data);
+      window._csvData = data;
+      window._csvMeta = { code, start, end };
     });
 }
 
@@ -105,6 +105,25 @@ function renderStats(data) {
 }
 
 window.onload = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get("referral_code");
+  const token = urlParams.get("access_token");
+
+  if (code && token) {
+    document.getElementById("referralCodeDisplay").innerText = code;
+    document.getElementById("infoBox").classList.remove("hidden");
+  }
+
+  if (code) {
+    const referralSelect = document.getElementById("referralCode");
+    referralSelect.value = code;
+    onCodeChange();
+  }
+
+  if (token) {
+    document.getElementById("accessToken").value = token;
+  }
+
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59);
