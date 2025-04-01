@@ -2,24 +2,36 @@ from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import requests
 import os
+import logging
 from datetime import datetime, timedelta
 
+# === 初始化 Flask App 與 CORS ===
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
 
+# === Logging 設定 ===
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
+# === 安全 Token ===
 ACCESS_TOKENS = {
     "LAVONS88": "token_lavons88_123",
     "LAVONS_WINNIE": "token_winnie_456",
     "LAVONS_XIAOSHAN": "token_xiaoshan_789"
 }
 
+# === EasyStore API 設定 ===
 EASYSTORE_API_URL = "https://www.don1donshop.com/api/3.0/orders.json"
 EASYSTORE_API_TOKEN = os.environ.get("EASYSTORE_API_KEY") or "bf227aac7aec54ea6abd5a78dd82a44a"
 
+# === 首頁 ===
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
+# === 查詢訂單 ===
 @app.route("/orders", methods=["GET"])
 def get_orders():
     referral_code = request.args.get("referral_code")
@@ -57,9 +69,10 @@ def get_orders():
         }
 
         response = requests.get(EASYSTORE_API_URL, params=params, headers=headers)
-        print(f"📄 Page {page} | 狀態碼: {response.status_code}")
+        logging.info(f"📄 Page {page} | Status Code: {response.status_code}")
 
         if response.status_code != 200:
+            logging.warning("🚫 非預期狀態碼，停止查詢")
             break
 
         orders = response.json().get("orders", [])
@@ -72,7 +85,6 @@ def get_orders():
     filtered = []
     seen_order_numbers = set()
 
-    print("🧾 開始列出每筆訂單的 Referral Code：")
     for order in all_orders:
         ref = order.get("referral")
         code = ref.get("code") if ref else None
@@ -89,7 +101,7 @@ def get_orders():
         is_refunded = order.get("financial_status") == "refunded"
         refund_amount = sum(float(r.get("amount", 0)) for r in order.get("refunds", []))
 
-        print(f"📦 訂單：{order_number}, 退款：{refund_amount}, 出貨：{order.get('fulfillment_status')}")
+        logging.debug(f"📦 訂單：{order_number} | 退款：{refund_amount} | 出貨狀態：{order.get('fulfillment_status')}")
 
         filtered.append({
             "order_number": order_number,
@@ -104,11 +116,13 @@ def get_orders():
             "refund_amount": refund_amount
         })
 
-    print(f"✅ 總共符合 {referral_code} 的訂單數：{len(filtered)}")
+    logging.info(f"✅ 最終符合推薦碼 {referral_code} 的訂單數：{len(filtered)}")
+
     if not filtered:
         return jsonify({"message": "查無符合的訂單"}), 200
 
     return jsonify(filtered)
 
+# === 啟動應用程式 ===
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
