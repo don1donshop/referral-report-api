@@ -13,7 +13,7 @@ function getBadge(type, value) {
     financial: {
       paid: `<span class="badge badge-paid">已付款</span>`,
       unpaid: `<span class="badge badge-unpaid">未付款</span>`,
-      pending: `<span class="badge badge-pending">未付款</span>`,
+      pending: `<span class="badge badge-pending">待付款</span>`,
       refunded: `<span class="badge badge-refunded">已退款</span>`
     },
     fulfillment: {
