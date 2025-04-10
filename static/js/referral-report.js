@@ -1,3 +1,6 @@
+// ✅ 初始排序設定
+let currentSort = "name";
+
 function onCodeChange() {
   const code = document.getElementById('referralCode').value;
   document.getElementById('tokenBlock').classList.toggle('hidden', !code);
@@ -43,7 +46,7 @@ function fetchOrders() {
   document.getElementById("stats").innerHTML = "🔄 查詢中，請稍候...";
   document.getElementById("statsNote").classList.add("hidden");
 
-  const url = `https://referral-report-api.onrender.com/orders?referral_code=${code}&access_token=${token}&created_at_min=${start.replace('T', ' ')}&created_at_max=${end.replace('T', ' ')}`;
+  const url = `http://127.0.0.1:5000/orders?referral_code=${code}&access_token=${token}&created_at_min=${start.replace('T', ' ')}&created_at_max=${end.replace('T', ' ')}`;
 
   fetch(url)
     .then(res => res.json())
@@ -56,6 +59,7 @@ function fetchOrders() {
 
       renderTable(data);
       renderStats(data);
+      renderSKUStats(data);
       window._csvData = data;
       window._csvMeta = { code, start, end };
     });
@@ -88,7 +92,7 @@ function renderStats(data) {
   const validOrders = data.filter(o =>
     o.financial_status === "paid" &&
     o.is_cancelled === false &&
-    o.financial_status !== "refunded"
+    o.is_refunded === false
   );
 
   const count = validOrders.length;
@@ -103,6 +107,97 @@ function renderStats(data) {
 
   document.getElementById("statsNote").classList.remove("hidden");
 }
+
+const SKU_MAP = {
+  "LA02-4566": "除菌去漬洗衣精（蔚藍海岸）",
+  "LA02-4580": "除菌去漬洗衣精（氣泡香檳）",
+  "LA02-4573": "除菌去漬洗衣精（法式馬卡龍）",
+  "LA02-4597": "除菌去漬洗衣精（無香料）",
+  "LA03-4603": "除菌去漬洗衣精補充包（蔚藍海岸）",
+  "LA03-4627": "除菌去漬洗衣精補充包（氣泡香檳）",
+  "LA03-4610": "除菌去漬洗衣精補充包（法式馬卡龍）",
+  "LA03-4634": "除菌去漬洗衣精補充包（無香料）",
+  "LA02-0029": "香氛柔軟精（蔚藍海岸）",
+  "LA02-0074": "香氛柔軟精補充包（蔚藍海岸）",
+  "LA02-1514": "香氛柔軟精（氣泡香檳）",
+  "LA02-1521": "香氛柔軟精補充包（氣泡香檳）",
+  "LA02-0043": "香氛柔軟精（法式馬卡龍）",
+  "LA02-0098": "香氛柔軟精補充包（法式馬卡龍）",
+  "LA02-2801": "精緻衣物洗衣精（蔚藍海岸）",
+  "LA02-2863": "精緻衣物洗衣精（氣泡香檳）",
+  "LA02-2832": "精緻衣物洗衣精（法式馬卡龍）",
+  "LA02-0173": "柔氛噴霧（蔚藍海岸）",
+  "LA02-1538": "柔氛噴霧（氣泡香檳）",
+  "LA02-0197": "柔氛噴霧（法式馬卡龍）",
+  "LA02-0418": "柔氛噴霧補充包（蔚藍海岸）",
+  "LA02-1545": "柔氛噴霧補充包（氣泡香檳）",
+  "LA02-0432": "柔氛噴霧補充包（法式馬卡龍）",
+  "LA02-2351": "室內擴香（蔚藍海岸）",
+  "LA02-2368": "室內擴香補充包（蔚藍海岸）",
+  "LA02-2399": "室內擴香（氣泡香檳）",
+  "LA02-2405": "室內擴香補充包（氣泡香檳）",
+  "LA02-2375": "室內擴香（法式馬卡龍）",
+  "LA02-2382": "室內擴香補充包（法式馬卡龍）",
+  "LA02-3729": "To the Moon衣物柔軟精（清鈴恬木）",
+  "LA02-9510": "To the Moon衣物柔軟精（澄柑暖木）",
+  "LA02-3743": "To the Moon織品噴霧（清鈴恬木）",
+  "LA02-9534": "To the Moon織品噴霧（澄柑暖木）"
+};
+
+/* function renderSKUStats(data) {
+  document.querySelector(".sort-bar").classList.remove("hidden");
+  const skuCount = {};
+  const validOrders = data.filter(o =>
+    o.financial_status === "paid" &&
+    o.is_cancelled === false &&
+    o.is_refunded === false
+  );
+
+  validOrders.forEach(order => {
+    const items = order.line_items || [];
+    items.forEach(item => {
+      const sku = item.sku;
+      const qty = parseInt(item.quantity) || 0;
+      if (!sku) return;
+
+      const units = sku.split(",");
+      units.forEach(unit => {
+        const [baseSku, multiplier] = unit.split("*");
+        const count = parseInt(multiplier || "1") * qty;
+        if (!skuCount[baseSku]) skuCount[baseSku] = 0;
+        skuCount[baseSku] += count;
+      });
+    });
+  });
+
+  const tbody = document.querySelector("#skuStatsTable tbody");
+  tbody.innerHTML = "";
+
+  let sorted = Object.entries(skuCount);
+  if (currentSort === "count") {
+    sorted.sort((a, b) => b[1] - a[1]);
+  } else if (currentSort === "name") {
+    sorted.sort((a, b) => {
+      const nameA = SKU_MAP[a[0]] || a[0];
+      const nameB = SKU_MAP[b[0]] || b[0];
+      return nameA.localeCompare(nameB, "zh-Hant");
+    });
+  }
+
+  sorted.forEach(([sku, qty]) => {
+    const tr = document.createElement("tr");
+    const name = SKU_MAP[sku] || "❓ 未知品項";
+    tr.innerHTML = `<td>${name}</td><td>${sku}</td><td>${qty}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("skuStatsBox").classList.remove("hidden");
+} // 客戶並未確認要使用 */
+
+/*function onChangeSKUSort() {
+  currentSort = document.getElementById("skuSortSelect").value;
+  renderSKUStats(window._csvData || []);
+} // 客戶並未確認要使用 */
 
 window.onload = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -129,4 +224,6 @@ window.onload = () => {
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59);
   document.getElementById("startTime").value = start.toISOString().slice(0, 16);
   document.getElementById("endTime").value = end.toISOString().slice(0, 16);
+  document.getElementById("skuSortSelect").value = "name";
+  currentSort = "name";
 };

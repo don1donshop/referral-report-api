@@ -14,9 +14,12 @@
     <label>推薦碼：</label>
     <select id="referralCode" onchange="onCodeChange()">
       <option value="">請選擇推薦碼</option>
+      <!--
       <option value="LAVONS88">LAVONS88</option>
       <option value="LAVONS_WINNIE">LAVONS_WINNIE</option>
       <option value="LAVONS_XIAOSHAN">LAVONS_XIAOSHAN</option>
+      -->    
+      <option value="LAVONS_XIAOKE">LAVONS_XIAOKE</option>
     </select>
 
     <div id="tokenBlock" class="hidden">
@@ -32,7 +35,7 @@
 
     <button onclick="fetchOrders()">查詢訂單</button>
 
-    <!-- 狀態訊息區塊 -->
+    <!-- 狀態訊息 -->
     <div id="infoBox" class="hidden">
       👋 你正在以推薦碼 <b id="referralCodeDisplay"></b> 的身份查詢訂單。
     </div>
@@ -44,7 +47,31 @@
 
     <button id="csvBtn" class="hidden">📤 匯出報表 (CSV)</button>
 
-    <!-- 結果表格區塊 -->
+    <!-- 商品統計排序選項 
+    <div class="sort-bar hidden">
+      <label for="skuSortSelect">🔽 商品排序方式：</label>
+      <select id="skuSortSelect" onchange="onChangeSKUSort()">
+        <option value="count">依數量（高→低）</option>
+        <option value="name" selected>依品名（A→Z）</option>
+      </select>
+    </div>    -->
+    
+    <!-- SKU 統計表 不啟用
+    <div id="skuStatsBox" class="hidden">
+      <h2>📦 商品數量統計（有效訂單）</h2>
+      <table id="skuStatsTable">
+        <thead>
+          <tr>
+            <th>商品名稱</th>
+            <th>SKU</th>
+            <th>數量</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>  -->
+    
+    <!-- 訂單結果表格 -->
     <div class="table_mb">
       <table id="results">
         <thead>
@@ -64,6 +91,7 @@
 
   </div> <!-- /container -->
 
+  <!-- JS 載入 -->
   <script src="{{ url_for('static', filename='js/referral-report.js') }}"></script>
 </body>
 </html>
