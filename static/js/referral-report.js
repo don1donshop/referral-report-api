@@ -170,6 +170,18 @@ function renderStats(data) {
 } // 客戶並未確認要使用 */
 
 window.onload = () => {
+  const now = new Date();
+
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+
+  document.getElementById("startTime").value = start.toISOString().slice(0, 16);
+  document.getElementById("endTime").value = end.toISOString().slice(0, 16);
+
+  // 其他 URL 參數處理
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get("referral_code");
   const token = urlParams.get("access_token");
@@ -188,12 +200,5 @@ window.onload = () => {
   if (token) {
     document.getElementById("accessToken").value = token;
   }
-
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59);
-  document.getElementById("startTime").value = start.toISOString().slice(0, 16);
-  document.getElementById("endTime").value = end.toISOString().slice(0, 16);
-  //document.getElementById("skuSortSelect").value = "name";
-  //currentSort = "name";
 };
+
