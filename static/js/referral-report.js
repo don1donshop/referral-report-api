@@ -169,6 +169,12 @@ function renderStats(data) {
   renderSKUStats(window._csvData || []);
 } // 客戶並未確認要使用 */
 
+function toDateTimeLocalString(date) {
+  // 修正成符合 datetime-local 的格式 yyyy-MM-ddTHH:mm
+  const pad = n => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 window.onload = () => {
   const now = new Date();
 
@@ -176,12 +182,11 @@ window.onload = () => {
   start.setHours(0, 0, 0, 0);
 
   const end = new Date(now);
-  end.setHours(23, 59, 59, 999);
+  end.setHours(23, 59, 0, 0);
 
-  document.getElementById("startTime").value = start.toISOString().slice(0, 16);
-  document.getElementById("endTime").value = end.toISOString().slice(0, 16);
+  document.getElementById("startTime").value = toDateTimeLocalString(start);
+  document.getElementById("endTime").value = toDateTimeLocalString(end);
 
-  // 其他 URL 參數處理
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get("referral_code");
   const token = urlParams.get("access_token");
@@ -201,4 +206,3 @@ window.onload = () => {
     document.getElementById("accessToken").value = token;
   }
 };
-
