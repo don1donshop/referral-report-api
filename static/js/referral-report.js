@@ -46,7 +46,7 @@ function fetchOrders() {
   document.getElementById("stats").innerHTML = "🔄 查詢中，請稍候...";
   document.getElementById("statsNote").classList.add("hidden");
 
-  const url = `http://127.0.0.1:5000/orders?referral_code=${code}&access_token=${token}&created_at_min=${start.replace('T', ' ')}&created_at_max=${end.replace('T', ' ')}`;
+  const url = `https://referral-report-api.onrender.com/orders?referral_code=${code}&access_token=${token}&created_at_min=${start.replace('T', ' ')}&created_at_max=${end.replace('T', ' ')}`;
 
   fetch(url)
     .then(res => res.json())
